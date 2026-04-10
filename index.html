@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Communication Board</title>
+
+<style>
+body{font-family:sans-serif;background:#f5f5f5;text-align:center;padding:20px;}
+.section{background:white;padding:15px;margin:10px auto;border-radius:12px;max-width:700px;}
+#runPanel{display:none;}
+.grid{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;}
+
+.choice{
+width:150px;height:150px;border-radius:20px;
+font-size:28px;display:flex;align-items:center;justify-content:center;
+flex-direction:column;cursor:pointer;
+}
+
+.choice img{max-height:60px;margin-bottom:6px;}
+.yes{background:#4CAF50;}
+.no{background:#F44336;}
+.maybe{background:orange;}
+.scale{background:#607D8B;color:white;}
+
+.active{outline:6px solid white;}
+
+.next{
+background:#1976D2;color:white;padding:16px 26px;
+border:none;border-radius:10px;font-size:20px;margin-top:20px;cursor:pointer;
+}
+
+.choicePreview{
+display:flex;justify-content:space-between;align-items:center;
+padding:10px;background:#fafafa;margin:8px 0;border-radius:10px;
+}
+
+.smallBtn{
+background:#eee;padding:6px 10px;border-radius:6px;cursor:pointer;margin-left:5px;
+}
+
+/* Round buttons */
+.tool-row{
+display:flex;
+justify-content:center;
+gap:30px;
+margin-top:10px;
+}
+
+.tool-btn{
+display:flex;
+flex-direction:column;
+align-items:center;
+cursor:pointer;
+}
+
+.tool-btn .icon{
+width:70px;
+height:70px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+border:2px solid #333;
+font-size:28px;
+background:white;
+}
+
+.tool-btn .label{
+margin-top:6px;
+font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="editPanel">
+
+<h2>Digital Communication Board</h2>
+
+<div class="section">
+<b>⚙️ Choose option type</b><br><br>
+<select id="mode" onchange="setupChoices()">
+<option value="">-- choose --</option>
+<option value="yesnomaybe">Yes / Not sure / No</option>
+<option value="yesno">Yes / No</option>
+<option value="scale">Scale</option>
+</select>
+</div>
+
+<div class="section" id="globalChoices"></div>
+
+<div id="questions"></div>
+
+<button onclick="addQuestion()">➕ Add question</button>
+
+<br><br>
+
+<button onclick="start()" class="next">▶️ Start board</button>
+
+<br><br>
+
+<div class="tool-row">
+
+<div class="tool-btn" onclick="saveTemplate()">
+<div class="icon">💾</div>
+<div class="label">Save</div>
+</div>
+
+<div class="tool-btn" onclick="loadTemplate()">
+<div class="icon">📂</div>
+<div class="label">Open</div>
+</div>
+
+<div class="tool-btn" onclick="exportPlaylist()">
+<div class="icon">⬇️</div>
+<div class="label">Download</div>
+</div>
+
+<div class="tool-btn" onclick="importPlaylist()">
+<div class="icon">⬆️</div>
+<div class="label">Upload</div>
+</div>
+
+<div class="tool-btn" onclick="sharePlaylist()">
+<div class="icon">📤</div>
+<div class="label">Share</div>
+</div>
+
+</div>
+
+<div id="templateList" class="section" style="display:none;"></div>
+
+</div>
+
+<!-- RUN -->
+<div id="runPanel">
+<h2 id="q"></h2>
+<img id="img" style="max-width:300px"><br>
+<div id="choices" class="grid"></div>
+<button class="next" onclick="nextQ()">Next</button>
+<div id="results"></div>
+</div>
+
+<script>
+
+let choices = {
+v1:{text:"Yes",emoji:"👍"},
+v2:{text:"Not sure",emoji:"🤷"},
+v3:{text:"No",emoji:"👎"}
+};
+
+let choiceImgs = {};
+let scaleMax = 5;
+
+let questions=[];
+let answers=[];
+let current=0;
+let selected=null;
+
+function setupChoices(){
+const mode = document.getElementById("mode").value;
+const box = document.getElementById("globalChoices");
+
+if(!mode){box.style.display="none";return;}
+box.style.display="block";
+
+function row(key){
+return `
+<div class="choicePreview">
+<span>
+${choiceImgs[key] 
+? '<img src="'+choiceImgs[key]+'" style="height:40px">'
+: choices[key].emoji}
+ ${choices[key].text}
+</span>
+<div>
+<button class="smallBtn" onclick="editText('${key}')">✏️</button>
+<button class="smallBtn" onclick="editEmoji('${key}')">😀</button>
+<button class="smallBtn" onclick="uploadChoiceImg('${key}')">🖼️</button>
+</div>
+</div>`;
+}
+
+let html="";
+
+if(mode==="yesnomaybe") html = row("v1")+row("v2")+row("v3");
+if(mode==="yesno") html = row("v1")+row("v3");
+
+if(mode==="scale"){
+html = `<div class="choicePreview">
+<span>Scale 1–${scaleMax}</span>
+<button class="smallBtn" onclick="editScale()">🔢 Edit</button>
+</div>`;
+}
+
+box.innerHTML = html;
+}
+
+function editText(key){
+let v = prompt("New text:", choices[key].text);
+if(v) choices[key].text = v;
+setupChoices();
+}
+
+function editEmoji(key){
+let v = prompt("New emoji:", choices[key].emoji);
+if(v){choiceImgs[key]=null;choices[key].emoji=v;}
+setupChoices();
+}
+
+function uploadChoiceImg(key){
+let input = document.createElement("input");
+input.type="file";
+input.accept="image/*";
+input.onchange=e=>{
+const r=new FileReader();
+r.onload=()=>{choiceImgs[key]=r.result;setupChoices();};
+r.readAsDataURL(e.target.files[0]);
+};
+input.click();
+}
+
+function editScale(){
+let v = prompt("How many steps?", scaleMax);
+if(v){scaleMax=parseInt(v);setupChoices();}
+}
+
+function addQuestion(){
+const i=questions.length;
+questions.push({text:"",img:""});
+
+const div=document.createElement("div");
+div.className="section";
+
+div.innerHTML=`
+<input placeholder="Write question"
+style="width:80%;padding:8px"
+oninput="questions[${i}].text=this.value">
+
+<br><br>
+<label>Upload image</label><br>
+<input type="file" onchange="loadImg(event,${i})">
+
+<br>
+<img id="img${i}" style="max-width:200px;display:none">
+`;
+
+document.getElementById("questions").appendChild(div);
+}
+
+function loadImg(e,i){
+const r=new FileReader();
+r.onload=function(){
+questions[i].img=this.result;
+const img=document.getElementById("img"+i);
+img.src=this.result;
+img.style.display="block";
+};
+r.readAsDataURL(e.target.files[0]);
+}
+
+function start(){
+if(questions.length===0){alert("Add at least one question");return;}
+editPanel.style.display="none";
+runPanel.style.display="block";
+render();
+}
+
+function render(){
+
+if(current>=questions.length){showResults();return;}
+
+q.innerText=questions[current].text;
+img.src=questions[current].img||"";
+
+const mode=document.getElementById("mode").value;
+const c=document.getElementById("choices");
+c.innerHTML="";
+
+function createBtn(label,type,text){
+let b=document.createElement("div");
+b.className="choice "+type;
+b.innerHTML=label;
+
+b.onclick=function(){
+selected=text;
+document.querySelectorAll(".choice").forEach(x=>x.classList.remove("active"));
+b.classList.add("active");
+playClick();
+setTimeout(()=>speak(text),120);
+};
+
+c.appendChild(b);
+}
+
+if(mode==="yesnomaybe"){
+createBtn(choiceImgs.v1?'<img src="'+choiceImgs.v1+'">':choices.v1.emoji+"<br>"+choices.v1.text,"yes",choices.v1.text);
+createBtn(choiceImgs.v2?'<img src="'+choiceImgs.v2+'">':choices.v2.emoji+"<br>"+choices.v2.text,"maybe",choices.v2.text);
+createBtn(choiceImgs.v3?'<img src="'+choiceImgs.v3+'">':choices.v3.emoji+"<br>"+choices.v3.text,"no",choices.v3.text);
+}
+
+if(mode==="yesno"){
+createBtn(choiceImgs.v1?'<img src="'+choiceImgs.v1+'">':choices.v1.emoji+"<br>"+choices.v1.text,"yes",choices.v1.text);
+createBtn(choiceImgs.v3?'<img src="'+choiceImgs.v3+'">':choices.v3.emoji+"<br>"+choices.v3.text,"no",choices.v3.text);
+}
+
+if(mode==="scale"){
+for(let i=1;i<=scaleMax;i++){
+createBtn(i,"scale",i);
+}
+}
+
+}
+
+function playClick(){
+const click = new Audio("klick.mpeg-4");
+click.currentTime = 0;
+click.play();
+}
+
+function speak(t){
+speechSynthesis.cancel();
+let msg=new SpeechSynthesisUtterance(t);
+msg.lang="en-US";
+speechSynthesis.speak(msg);
+}
+
+function nextQ(){
+if(!selected)return;
+answers.push({q:questions[current].text,a:selected});
+selected=null;
+current++;
+render();
+}
+
+function showResults(){
+let r=results;
+r.innerHTML=`<h2>Results</h2>
+<button onclick="downloadResults()" class="next">⬇ Download results</button>
+<button onclick="shareResults()" class="next">📩 Share results</button>`;
+
+answers.forEach((x,i)=>{
+r.innerHTML+=`<div class="section">
+<b>Question ${i+1}</b><br>${x.q}<br>Answer: ${x.a}</div>`;
+});
+}
+
+function downloadResults(){
+let content="RESULTS\n\n";
+
+answers.forEach((x,i)=>{
+content+="Question "+(i+1)+"\n"+x.q+"\nAnswer: "+x.a+"\n\n";
+});
+
+let blob=new Blob([content],{type:"text/plain"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="results.txt";
+a.click();
+}
+
+function sharePlaylist(){
+let data = JSON.stringify({
+choices,choiceImgs,scaleMax,questions,mode:mode.value
+});
+
+let blob=new Blob([data],{type:"application/json"});
+let file=new File([blob],"communication_board.json");
+
+if(navigator.share){
+navigator.share({
+title:"Communication Board",
+text:"Here is a communication board",
+files:[file]
+});
+}else{
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="communication_board.json";
+a.click();
+}
+}
+
+function shareResults(){
+let content="RESULTS\n\n";
+
+answers.forEach((x,i)=>{
+content+="Question "+(i+1)+"\n"+x.q+"\nAnswer: "+x.a+"\n\n";
+});
+
+let blob=new Blob([content],{type:"text/plain"});
+let file=new File([blob],"results.txt");
+
+if(navigator.share){
+navigator.share({
+title:"Results",
+text:"Here are the results",
+files:[file]
+});
+}else{
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="results.txt";
+a.click();
+}
+}
+
+function saveTemplate(){
+let name=prompt("Template name:");
+if(!name)return;
+
+localStorage.setItem("board_"+name,JSON.stringify({
+choices,choiceImgs,scaleMax,questions,mode:mode.value
+}));
+
+alert("Saved!");
+}
+
+function loadTemplate(){
+
+let keys=Object.keys(localStorage)
+.filter(k=>k.startsWith("board_"));
+
+let list=document.getElementById("templateList");
+list.style.display="block";
+list.innerHTML="<h3>Select template</h3>";
+
+keys.forEach(key=>{
+
+let name=key.replace("board_","");
+
+let div=document.createElement("div");
+div.className="choicePreview";
+
+let btn=document.createElement("button");
+btn.innerText=name;
+btn.className="smallBtn";
+
+btn.onclick=function(){
+loadTemplateData(key);
+list.style.display="none";
+};
+
+div.appendChild(btn);
+list.appendChild(div);
+
+});
+}
+
+function loadTemplateData(key){
+
+let data=JSON.parse(localStorage.getItem(key));
+
+choices=data.choices;
+choiceImgs=data.choiceImgs||{};
+scaleMax=data.scaleMax;
+questions=data.questions;
+
+document.getElementById("mode").value=data.mode;
+document.getElementById("questions").innerHTML="";
+
+questions.forEach((q,i)=>{
+
+const div=document.createElement("div");
+div.className="section";
+
+div.innerHTML=`
+<input value="${q.text}" style="width:80%;padding:8px"
+oninput="questions[${i}].text=this.value">
+
+<br><br>
+<label>Upload image</label><br>
+<input type="file" onchange="loadImg(event,${i})">
+
+<br>
+<img id="img${i}" src="${q.img||""}" style="max-width:200px;${q.img?'':'display:none'}">
+`;
+
+document.getElementById("questions").appendChild(div);
+
+});
+
+setupChoices();
+}
+
+function exportPlaylist(){
+let blob=new Blob([JSON.stringify({
+choices,choiceImgs,scaleMax,questions,mode:mode.value
+})],{type:"application/json"});
+
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="board.json";
+a.click();
+}
+
+function importPlaylist(){
+
+let input=document.createElement("input");
+input.type="file";
+input.accept="application/json";
+
+input.onchange=e=>{
+let r=new FileReader();
+
+r.onload=()=>{
+try{
+let data=JSON.parse(r.result);
+
+choices=data.choices;
+choiceImgs=data.choiceImgs||{};
+scaleMax=data.scaleMax;
+questions=data.questions;
+
+mode.value=data.mode;
+document.getElementById("questions").innerHTML="";
+
+questions.forEach((q,i)=>{
+
+const div=document.createElement("div");
+div.className="section";
+
+div.innerHTML=`
+<input value="${q.text}" style="width:80%;padding:8px"
+oninput="questions[${i}].text=this.value">
+
+<br><br>
+<label>Upload image</label><br>
+<input type="file" onchange="loadImg(event,${i})">
+
+<br>
+<img id="img${i}" src="${q.img||""}" style="max-width:200px;${q.img?'':'display:none'}">
+`;
+
+document.getElementById("questions").appendChild(div);
+
+});
+
+setupChoices();
+alert("Board loaded!");
+
+}catch{
+alert("Invalid file");
+}
+};
+
+r.readAsText(e.target.files[0]);
+};
+
+input.click();
+}
+
+setupChoices();
+addQuestion();
+
+</script>
+
+</body>
+</html>
