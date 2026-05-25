@@ -2,560 +2,992 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Digital Communication Board</title>
-
 <style>
-body{font-family:sans-serif;background:#f5f5f5;text-align:center;padding:20px;}
-.section{background:white;padding:15px;margin:10px auto;border-radius:12px;max-width:700px;}
-#runPanel{display:none;}
-.grid{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;}
-
-.choice{
-width:150px;height:150px;border-radius:20px;
-font-size:28px;display:flex;align-items:center;justify-content:center;
-flex-direction:column;cursor:pointer;
+body {
+  font-family: sans-serif;
+  background: #f5f5f5;
+  text-align: center;
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
 }
 
-.choice img{max-height:60px;margin-bottom:6px;}
-.yes{background:#4CAF50;}
-.no{background:#F44336;}
-.maybe{background:orange;}
-.scale{background:#607D8B;color:white;}
-
-.active{outline:6px solid white;}
-
-.next{
-background:#1976D2;color:white;padding:16px 26px;
-border:none;border-radius:10px;font-size:20px;margin-top:20px;cursor:pointer;
+.section {
+  background: white;
+  padding: 15px;
+  margin: 10px auto;
+  border-radius: 12px;
+  max-width: 700px;
 }
 
-.choicePreview{
-display:flex;justify-content:space-between;align-items:center;
-padding:10px;background:#fafafa;margin:8px 0;border-radius:10px;
+#runPanel { display: none; }
+#resultPanel { display: none; }
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
 }
 
-.smallBtn{
-background:#eee;padding:6px 10px;border-radius:6px;cursor:pointer;margin-left:5px;
+.choice {
+  width: 22vw;
+  height: 22vw;
+  max-width: 150px;
+  max-height: 150px;
+  min-width: 90px;
+  min-height: 90px;
+  border-radius: 20px;
+  font-size: clamp(16px, 2.5vw, 28px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.1s;
 }
 
-/* Round buttons */
-.tool-row{
-display:flex;
-justify-content:center;
-gap:30px;
-margin-top:10px;
+.choice:active { transform: scale(0.95); }
+.choice img { max-height: 60px; margin-bottom: 6px; }
+
+.yes    { background: #4CAF50; color: white; }
+.no     { background: #F44336; color: white; }
+.maybe  { background: orange;  color: white; }
+.scale  { background: #607D8B; color: white; }
+
+.active { outline: 6px solid white; box-shadow: 0 0 0 3px #333; }
+
+.next {
+  background: #1976D2;
+  color: white;
+  padding: 16px 26px;
+  border: none;
+  border-radius: 10px;
+  font-size: 20px;
+  margin-top: 20px;
+  cursor: pointer;
 }
 
-.tool-btn{
-display:flex;
-flex-direction:column;
-align-items:center;
-cursor:pointer;
+.next:hover { background: #1565C0; }
+
+.choicePreview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #fafafa;
+  margin: 8px 0;
+  border-radius: 10px;
 }
 
-.tool-btn .icon{
-width:70px;
-height:70px;
-border-radius:50%;
-display:flex;
-align-items:center;
-justify-content:center;
-border:2px solid #333;
-font-size:28px;
-background:white;
+.smallBtn {
+  background: #eee;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 5px;
+  border: none;
+  font-size: 14px;
 }
 
-.tool-btn .label{
-margin-top:6px;
-font-size:13px;
+.tool-row {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 10px;
+  flex-wrap: wrap;
 }
+
+.tool-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.tool-btn .icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #333;
+  font-size: 28px;
+  background: white;
+}
+
+.tool-btn .label { margin-top: 6px; font-size: 13px; }
+
+/* Results */
+.result-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px auto;
+  max-width: 600px;
+  text-align: left;
+}
+
+.result-item {
+  background: white;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.result-badge {
+  min-width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: white;
+  font-weight: bold;
+}
+
+.badge-yes   { background: #4CAF50; }
+.badge-no    { background: #F44336; }
+.badge-maybe { background: orange; }
+.badge-num   { background: #607D8B; }
+
+.result-question { flex: 1; }
+.result-answer   { font-weight: bold; }
+
+.result-summary {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 16px auto;
+  max-width: 600px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.summary-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 12px;
+  min-width: 80px;
+}
+
+.summary-count { font-size: 36px; font-weight: bold; color: white; }
+.summary-label { font-size: 14px; color: white; margin-top: 4px; }
+
+.btn-download {
+  background: #388E3C;
+  color: white;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  margin: 8px;
+  cursor: pointer;
+}
+
+.btn-download:hover { background: #2E7D32; }
+
+.btn-restart {
+  background: #757575;
+  color: white;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  margin: 8px;
+  cursor: pointer;
+}
+
+.btn-restart:hover { background: #616161; }
+
+.progress-bar-wrap {
+  background: #ddd;
+  border-radius: 10px;
+  height: 10px;
+  max-width: 400px;
+  margin: 10px auto;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #1976D2;
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+
+.question-counter {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+/* QR modal */
+#qr-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;}
+#qr-modal.on{display:flex;}
+.qr-box{background:#fff;border-radius:20px;padding:28px 24px;text-align:center;max-width:320px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);}
+.qr-heading{font-size:16px;font-weight:700;color:#333;margin-bottom:4px;}
+.qr-url{font-size:11px;color:#999;margin-bottom:14px;word-break:break-all;}
+#qr-canvas{border-radius:8px;margin-bottom:14px;}
+.qr-dl{padding:10px 22px;background:#4CAF50;color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;margin:4px;}
+.qr-cl{padding:10px 22px;background:#eee;color:#333;border:none;border-radius:50px;font-size:14px;cursor:pointer;margin:4px;}
+
+/* Spinner */
+#link-spinner{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9998;align-items:center;justify-content:center;}
+#link-spinner.on{display:flex;}
+.sp-ring{width:54px;height:54px;border:6px solid rgba(255,255,255,0.2);border-top:6px solid #c87941;border-radius:50%;animation:sp-spin 0.75s linear infinite;}
+@keyframes sp-spin{to{transform:rotate(360deg);}}
+
 </style>
 </head>
-
 <body>
 
+<!-- REDIGERA -->
 <div id="editPanel">
+  <h2>Digital Communication Board</h2>
 
-<h2>Digital Communication Board</h2>
+  <div class="section">
+    <b>⚙️ Select type</b><br><br>
+    <select id="mode" onchange="setupChoices()">
+      <option value="">-- select --</option>
+      <option value="yesnomaybe">Ja / Vet ej / Nej</option>
+      <option value="yesno">Ja / Nej</option>
+      <option value="scale">Skala</option>
+    </select>
+  </div>
 
-<div class="section">
-<b>⚙️ Choose option type</b><br><br>
-<select id="mode" onchange="setupChoices()">
-<option value="">-- choose --</option>
-<option value="yesnomaybe">Yes / Not sure / No</option>
-<option value="yesno">Yes / No</option>
-<option value="scale">Scale</option>
-</select>
+  <div class="section" id="globalChoices"></div>
+
+  <div id="questions"></div>
+
+  <button onclick="addQuestion()">➕ Add question</button>
+
+  <br><br>
+
+  <button onclick="start()" class="next">▶️ Start board</button>
+
+  <br><br>
+
+  <div class="tool-row">
+    <div class="tool-btn" onclick="exportPlaylist()">
+      <div class="icon">⬇️</div>
+      <div class="label">Download</div>
+    </div>
+    <div class="tool-btn" onclick="importPlaylist()">
+      <div class="icon">⬆️</div>
+      <div class="label">Upload</div>
+    </div>
+    <div class="tool-btn" onclick="createShareLink()">
+      <div class="icon">🔗</div>
+      <div class="label">Create link</div>
+    </div>
+  </div>
+
+  <div id="templateList" class="section" style="display:none;"></div>
 </div>
 
-<div class="section" id="globalChoices"></div>
-
-<div id="questions"></div>
-
-<button onclick="addQuestion()">➕ Add question</button>
-
-<br><br>
-
-<button onclick="start()" class="next">▶️ Start board</button>
-
-<br><br>
-
-<div class="tool-row">
-
-<div class="tool-btn" onclick="saveTemplate()">
-<div class="icon">💾</div>
-<div class="label">Save</div>
-</div>
-
-<div class="tool-btn" onclick="loadTemplate()">
-<div class="icon">📂</div>
-<div class="label">Open</div>
-</div>
-
-<div class="tool-btn" onclick="exportPlaylist()">
-<div class="icon">⬇️</div>
-<div class="label">Download</div>
-</div>
-
-<div class="tool-btn" onclick="importPlaylist()">
-<div class="icon">⬆️</div>
-<div class="label">Upload</div>
-</div>
-
-<div class="tool-btn" onclick="sharePlaylist()">
-<div class="icon">📤</div>
-<div class="label">Share</div>
-</div>
-
-</div>
-
-<div id="templateList" class="section" style="display:none;"></div>
-
-</div>
-
-<!-- RUN -->
+<!-- KÖR -->
 <div id="runPanel">
-<h2 id="q"></h2>
-<img id="img" style="max-width:300px"><br>
-<div id="choices" class="grid"></div>
-<button class="next" onclick="nextQ()">Next</button>
-<div id="results"></div>
+  <div class="question-counter" id="questionCounter"></div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+  </div>
+  <h2 id="q"></h2>
+  <img id="img" style="max-width:300px; border-radius:12px;"><br>
+  <div id="choices" class="grid"></div>
+  <button class="next" onclick="nextQ()">Next ➡️</button>
+</div>
+
+<!-- RESULTAT -->
+<div id="resultPanel">
+  <h2>✅ Results</h2>
+  <div class="result-summary" id="resultSummary"></div>
+  <ul class="result-list" id="resultList"></ul>
+  <div style="margin-top: 20px;">
+    <button class="btn-download" onclick="downloadResults()">⬇️ Ladda ner resultat</button>
+    <button class="btn-restart" onclick="restartSession()">🔄 Start over</button>
+  </div>
 </div>
 
 <script>
-
 let choices = {
-v1:{text:"Yes",emoji:"👍"},
-v2:{text:"Not sure",emoji:"🤷"},
-v3:{text:"No",emoji:"👎"}
+  v1: { text: "Yes",     emoji: "👍" },
+  v2: { text: "Vet ej", emoji: "🤷" },
+  v3: { text: "No",    emoji: "👎" }
 };
 
 let choiceImgs = {};
 let scaleMax = 5;
+let questions = [];
+let answers = [];
+let current = 0;
+let selected = null;
 
-let questions=[];
-let answers=[];
-let current=0;
-let selected=null;
+/* ── SETUP ── */
 
-function setupChoices(){
-const mode = document.getElementById("mode").value;
-const box = document.getElementById("globalChoices");
+function setupChoices() {
+  const mode = document.getElementById("mode").value;
+  const box  = document.getElementById("globalChoices");
+  if (!mode) { box.style.display = "none"; return; }
+  box.style.display = "block";
 
-if(!mode){box.style.display="none";return;}
-box.style.display="block";
+  function row(key) {
+    return `
+    <div class="choicePreview">
+      <span>
+        ${choiceImgs[key] ? '<img src="'+choiceImgs[key]+'" style="height:40px">' : choices[key].emoji}
+        ${choices[key].text}
+      </span>
+      <div>
+        <button class="smallBtn" onclick="editText('${key}')">✏️</button>
+        <button class="smallBtn" onclick="editEmoji('${key}')">😀</button>
+        <button class="smallBtn" onclick="uploadChoiceImg('${key}')">🖼️</button>
+      </div>
+    </div>`;
+  }
 
-function row(key){
-return `
-<div class="choicePreview">
-<span>
-${choiceImgs[key] 
-? '<img src="'+choiceImgs[key]+'" style="height:40px">'
-: choices[key].emoji}
- ${choices[key].text}
-</span>
-<div>
-<button class="smallBtn" onclick="editText('${key}')">✏️</button>
-<button class="smallBtn" onclick="editEmoji('${key}')">😀</button>
-<button class="smallBtn" onclick="uploadChoiceImg('${key}')">🖼️</button>
-</div>
-</div>`;
+  let html = "";
+  if (mode === "yesnomaybe") html = row("v1") + row("v2") + row("v3");
+  if (mode === "yesno")      html = row("v1") + row("v3");
+  if (mode === "scale") {
+    html = `<div class="choicePreview">
+      <span>Skala 1–${scaleMax}</span>
+      <button class="smallBtn" onclick="editScale()">🔢 Ändra</button>
+    </div>`;
+  }
+  box.innerHTML = html;
 }
 
-let html="";
+function editText(key)  { let v = prompt("Ny text:", choices[key].text);  if (v) choices[key].text = v; setupChoices(); }
+function editEmoji(key) { let v = prompt("Ny emoji:", choices[key].emoji); if (v) { choiceImgs[key] = null; choices[key].emoji = v; } setupChoices(); }
+function editScale()    { let v = prompt("Hur många steg?", scaleMax); if (v) { scaleMax = parseInt(v); setupChoices(); } }
 
-if(mode==="yesnomaybe") html = row("v1")+row("v2")+row("v3");
-if(mode==="yesno") html = row("v1")+row("v3");
-
-if(mode==="scale"){
-html = `<div class="choicePreview">
-<span>Scale 1–${scaleMax}</span>
-<button class="smallBtn" onclick="editScale()">🔢 Edit</button>
-</div>`;
+function uploadChoiceImg(key) {
+  let input = document.createElement("input");
+  input.type = "file"; input.accept = "image/*";
+  input.onchange = e => {
+    const r = new FileReader();
+    r.onload = () => { choiceImgs[key] = r.result; setupChoices(); };
+    r.readAsDataURL(e.target.files[0]);
+  };
+  input.click();
 }
 
-box.innerHTML = html;
+function addQuestion() {
+  const i = questions.length;
+  questions.push({ text: "", img: "" });
+  const div = document.createElement("div");
+  div.className = "section";
+  div.innerHTML = `
+    <input placeholder="Write question" style="width:80%;padding:8px"
+      oninput="questions[${i}].text=this.value">
+    <br><br>
+    <label>Ladda upp bild</label><br>
+    <input type="file" onchange="loadImg(event,${i})">
+    <br>
+    <img id="img${i}" style="max-width:200px;display:none">`;
+  document.getElementById("questions").appendChild(div);
 }
 
-function editText(key){
-let v = prompt("New text:", choices[key].text);
-if(v) choices[key].text = v;
-setupChoices();
+function loadImg(e, i) {
+  const r = new FileReader();
+  r.onload = function () {
+    questions[i].img = this.result;
+    const img = document.getElementById("img" + i);
+    img.src = this.result;
+    img.style.display = "block";
+  };
+  r.readAsDataURL(e.target.files[0]);
 }
 
-function editEmoji(key){
-let v = prompt("New emoji:", choices[key].emoji);
-if(v){choiceImgs[key]=null;choices[key].emoji=v;}
-setupChoices();
+/* ── START ── */
+
+function start() {
+  if (questions.length === 0) { alert("Add at least one question"); return; }
+  if (!document.getElementById("mode").value) { alert("Select a type"); return; }
+  answers  = [];
+  current  = 0;
+  selected = null;
+  document.getElementById("editPanel").style.display   = "none";
+  document.getElementById("runPanel").style.display    = "block";
+  document.getElementById("resultPanel").style.display = "none";
+  render();
 }
 
-function uploadChoiceImg(key){
-let input = document.createElement("input");
-input.type="file";
-input.accept="image/*";
-input.onchange=e=>{
-const r=new FileReader();
-r.onload=()=>{choiceImgs[key]=r.result;setupChoices();};
-r.readAsDataURL(e.target.files[0]);
+/* ── RENDER (FIXED) ── */
+
+function render() {
+  if (current >= questions.length) {
+    showResults();
+    return;
+  }
+
+  const q    = questions[current];
+  const mode = document.getElementById("mode").value;
+
+  // Progress
+  const pct = Math.round((current / questions.length) * 100);
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("questionCounter").textContent =
+    "Fråga " + (current + 1) + " av " + questions.length;
+
+  document.getElementById("q").innerText = q.text;
+  const imgEl = document.getElementById("img");
+  imgEl.src = q.img || "";
+  imgEl.style.display = q.img ? "inline" : "none";
+
+  selected = null;
+  const c = document.getElementById("choices");
+  c.innerHTML = "";
+
+  function createBtn(label, type, text) {
+    let b = document.createElement("div");
+    b.className = "choice " + type;
+    b.innerHTML = label;
+    b.onclick = function () {
+      selected = text;
+      document.querySelectorAll(".choice").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      playClick();
+      setTimeout(() => speak(text), 120);
+    };
+    c.appendChild(b);
+  }
+
+  if (mode === "yesnomaybe") {
+    createBtn(choiceImgs.v1 ? '<img src="'+choiceImgs.v1+'">' : choices.v1.emoji+"<br>"+choices.v1.text, "yes",   choices.v1.text);
+    createBtn(choiceImgs.v2 ? '<img src="'+choiceImgs.v2+'">' : choices.v2.emoji+"<br>"+choices.v2.text, "maybe", choices.v2.text);
+    createBtn(choiceImgs.v3 ? '<img src="'+choiceImgs.v3+'">' : choices.v3.emoji+"<br>"+choices.v3.text, "no",    choices.v3.text);
+  }
+  if (mode === "yesno") {
+    createBtn(choiceImgs.v1 ? '<img src="'+choiceImgs.v1+'">' : choices.v1.emoji+"<br>"+choices.v1.text, "yes", choices.v1.text);
+    createBtn(choiceImgs.v3 ? '<img src="'+choiceImgs.v3+'">' : choices.v3.emoji+"<br>"+choices.v3.text, "no",  choices.v3.text);
+  }
+  if (mode === "scale") {
+    for (let n = 1; n <= scaleMax; n++) {
+      createBtn(String(n), "scale", String(n));
+    }
+  }
+}
+
+/* ── LJUD ── */
+
+function playClick() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 600;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc.start(); osc.stop(ctx.currentTime + 0.15);
+  } catch(e) {}
+}
+
+function speak(t) {
+  speechSynthesis.cancel();
+  let msg = new SpeechSynthesisUtterance(t);
+  msg.lang = "en-US";
+  speechSynthesis.speak(msg);
+}
+
+/* ── NÄSTA ── */
+
+function nextQ() {
+  if (!selected) {
+    alert("Välj ett svar först!");
+    return;
+  }
+  answers.push({ q: questions[current].text, a: selected });
+  selected = null;
+  current++;
+  render();
+}
+
+/* ── VISA RESULTAT ── */
+
+function showResults() {
+  document.getElementById("runPanel").style.display    = "none";
+  document.getElementById("resultPanel").style.display = "block";
+
+  const mode = document.getElementById("mode").value;
+
+  // Räkna svar
+  const counts = {};
+  answers.forEach(x => { counts[x.a] = (counts[x.a] || 0) + 1; });
+
+  // Sammanfattning
+  const summary = document.getElementById("resultSummary");
+  summary.innerHTML = "";
+
+  const colorMap = {
+    [choices.v1.text]: "#4CAF50",
+    [choices.v2.text]: "orange",
+    [choices.v3.text]: "#F44336"
+  };
+
+  Object.entries(counts).forEach(([ans, count]) => {
+    const color = colorMap[ans] || "#607D8B";
+    summary.innerHTML += `
+      <div class="summary-box" style="background:${color}">
+        <div class="summary-count">${count}</div>
+        <div class="summary-label">${ans}</div>
+      </div>`;
+  });
+
+  // Lista med varje fråga och svar
+  const list = document.getElementById("resultList");
+  list.innerHTML = "";
+
+  answers.forEach((item, i) => {
+    const color = colorMap[item.a] || "#607D8B";
+    const badgeClass =
+      item.a === choices.v1.text ? "badge-yes" :
+      item.a === choices.v3.text ? "badge-no"  :
+      item.a === choices.v2.text ? "badge-maybe" : "badge-num";
+
+    list.innerHTML += `
+      <li class="result-item">
+        <div class="result-badge ${badgeClass}">${item.a.charAt(0)}</div>
+        <div class="result-question">
+          <span style="color:#888; font-size:14px;">Fråga ${i+1}</span><br>
+          ${item.q}
+        </div>
+        <div class="result-answer" style="color:${color}">${item.a}</div>
+      </li>`;
+  });
+}
+
+/* ── LADDA NER RESULTAT ── */
+
+function downloadResults() {
+  const now = new Date();
+  const datum = now.toLocaleDateString("en-US");
+  const tid   = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+
+  // Räkna
+  const counts = {};
+  answers.forEach(x => { counts[x.a] = (counts[x.a] || 0) + 1; });
+
+  let content = "DIGITAL SAMTALSYTA – RESULTAT\n";
+  content += "================================\n";
+  content += `Datum: ${datum}  Tid: ${tid}\n`;
+  content += `Antal frågor: ${answers.length}\n\n`;
+
+  content += "SAMMANFATTNING\n--------------\n";
+  Object.entries(counts).forEach(([ans, count]) => {
+    content += `${ans}: ${count} gång${count !== 1 ? "er" : ""}\n`;
+  });
+
+  content += "\nDETALJERADE SVAR\n----------------\n";
+  answers.forEach((item, i) => {
+    content += `\nFråga ${i+1}: ${item.q}\nSvar: ${item.a}\n`;
+  });
+
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `samtalsyta-resultat-${datum.replace(/\//g,"-")}.txt`;
+  a.click();
+}
+
+/* ── BÖRJA OM ── */
+
+function restartSession() {
+  answers  = [];
+  current  = 0;
+  selected = null;
+  document.getElementById("resultPanel").style.display = "none";
+  document.getElementById("runPanel").style.display    = "block";
+  render();
+}
+
+/* ── EXPORT / IMPORT ── */
+
+function exportPlaylist() {
+  const blob = new Blob(
+    [JSON.stringify({ choices, choiceImgs, scaleMax, questions, mode: document.getElementById("mode").value })],
+    { type: "application/json" }
+  );
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "frågelista.json";
+  a.click();
+}
+
+function importPlaylist() {
+  let input = document.createElement("input");
+  input.type = "file"; input.accept = "application/json";
+  input.onchange = e => {
+    let r = new FileReader();
+    r.onload = () => {
+      try {
+        let data = JSON.parse(r.result);
+        choices    = data.choices;
+        choiceImgs = data.choiceImgs || {};
+        scaleMax   = data.scaleMax;
+        questions  = data.questions;
+        document.getElementById("mode").value = data.mode;
+        document.getElementById("questions").innerHTML = "";
+        questions.forEach((q, i) => {
+          const div = document.createElement("div");
+          div.className = "section";
+          div.innerHTML = `
+            <input value="${q.text.replace(/"/g,'&quot;')}" style="width:80%;padding:8px"
+              oninput="questions[${i}].text=this.value">
+            <br><br><label>Ladda upp bild</label><br>
+            <input type="file" onchange="loadImg(event,${i})">
+            <br>
+            <img id="img${i}" src="${q.img||""}" style="max-width:200px;${q.img?'':'display:none'}">`;
+          document.getElementById("questions").appendChild(div);
+        });
+        setupChoices();
+        alert("Frågelista laddad!");
+      } catch(e) { alert("Fel fil"); }
+    };
+    r.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
+
+/* ── SKAPA DELBAR LÄNK (med resultatvisning i genererad HTML) ── */
+
+async function createShareLink() {
+  const modeVal = document.getElementById("mode").value;
+  let data = { choices, choiceImgs, scaleMax, questions, mode: modeVal };
+
+  if (!data.questions.length) { alert("Add at least one question"); return; }
+  if (!modeVal) { alert("Select a type"); return; }
+
+  document.getElementById('link-spinner').classList.add('on');
+
+  const id   = Date.now();
+  const base = "samtal-" + id;
+  const repo = "sukrutaraj/checklist-pages";
+
+  async function upload(path, content) {
+    const res = await fetch(
+      "https://upload-api-kappa.vercel.app/api/upload",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path, content, repo })
+      }
+    );
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || "Upload failed");
+  }
+
+  // Ladda upp bilder
+  for (let i = 0; i < data.questions.length; i++) {
+    let q = data.questions[i];
+    if (q.img && q.img.startsWith("data:")) {
+      let b64  = q.img.split(",")[1];
+      let name = `${base}-q-${i}.jpg`;
+      await upload(name, b64);
+      await new Promise(r => setTimeout(r, 300));
+      q.img = `https://sukrutaraj.github.io/checklist-pages/${name}`;
+    }
+  }
+  for (let key in data.choiceImgs) {
+    if (data.choiceImgs[key] && data.choiceImgs[key].startsWith("data:")) {
+      let b64  = data.choiceImgs[key].split(",")[1];
+      let name = `${base}-${key}.jpg`;
+      await upload(name, b64);
+      await new Promise(r => setTimeout(r, 300));
+      data.choiceImgs[key] = `https://sukrutaraj.github.io/checklist-pages/${name}`;
+    }
+  }
+
+  // Bygg den delade HTML:en med säker strängsammansättning (undviker template literal-krockar)
+  const safeChoices    = JSON.stringify(data.choices);
+  const safeChoiceImgs = JSON.stringify(data.choiceImgs);
+  const safeQuestions  = JSON.stringify(data.questions);
+  const safeMode       = JSON.stringify(data.mode);
+  const safeScaleMax   = String(data.scaleMax);
+
+  const css = [
+    "body{font-family:sans-serif;background:#f5f5f5;text-align:center;padding:20px;max-width:900px;margin:auto;}",
+    ".grid{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;}",
+    ".choice{width:22vw;height:22vw;max-width:150px;max-height:150px;min-width:90px;min-height:90px;border-radius:20px;font-size:clamp(16px,2.5vw,28px);display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;transition:transform 0.1s;}",
+    ".choice:active{transform:scale(0.95);}",
+    ".choice img{max-height:60px;margin-bottom:6px;}",
+    ".yes{background:#4CAF50;color:white;}.no{background:#F44336;color:white;}.maybe{background:orange;color:white;}.scale{background:#607D8B;color:white;}",
+    ".active{outline:6px solid white;box-shadow:0 0 0 3px #333;}",
+    ".next{background:#1976D2;color:white;padding:16px 26px;border:none;border-radius:10px;font-size:20px;margin-top:20px;cursor:pointer;}",
+    ".next:hover{background:#1565C0;}",
+    "#resultPanel{display:none;}",
+    ".result-list{list-style:none;padding:0;margin:16px auto;max-width:600px;text-align:left;}",
+    ".result-item{background:white;border-radius:12px;padding:14px 18px;margin:8px 0;display:flex;align-items:center;gap:14px;font-size:18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);}",
+    ".result-badge{min-width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:white;font-weight:bold;}",
+    ".badge-yes{background:#4CAF50;}.badge-no{background:#F44336;}.badge-maybe{background:orange;}.badge-num{background:#607D8B;}",
+    ".result-question{flex:1;}.result-answer{font-weight:bold;}",
+    ".result-summary{background:white;border-radius:16px;padding:20px;margin:16px auto;max-width:600px;display:flex;justify-content:space-around;flex-wrap:wrap;gap:10px;}",
+    ".summary-box{display:flex;flex-direction:column;align-items:center;padding:10px 20px;border-radius:12px;min-width:80px;}",
+    ".summary-count{font-size:36px;font-weight:bold;color:white;}.summary-label{font-size:14px;color:white;margin-top:4px;}",
+    ".btn-download{background:#388E3C;color:white;padding:14px 28px;border:none;border-radius:10px;font-size:18px;margin:8px;cursor:pointer;}",
+    ".btn-download:hover{background:#2E7D32;}",
+    ".btn-restart{background:#757575;color:white;padding:14px 28px;border:none;border-radius:10px;font-size:18px;margin:8px;cursor:pointer;}",
+    ".progress-bar-wrap{background:#ddd;border-radius:10px;height:10px;max-width:400px;margin:10px auto;overflow:hidden;}",
+    ".progress-bar-fill{height:100%;background:#1976D2;border-radius:10px;transition:width 0.3s;}",
+    ".question-counter{font-size:14px;color:#888;margin-bottom:4px;}"
+  ].join("\n");
+
+  const scriptData = [
+    "var choices    = " + safeChoices + ";",
+    "var choiceImgs = " + safeChoiceImgs + ";",
+    "var scaleMax   = " + safeScaleMax + ";",
+    "var questions  = " + safeQuestions + ";",
+    "var mode       = " + safeMode + ";",
+    "var current    = 0;",
+    "var selected   = null;",
+    "var answers    = [];",
+    "",
+    "var colorMap = {};",
+    "colorMap[choices.v1.text] = '#4CAF50';",
+    "colorMap[choices.v2.text] = 'orange';",
+    "colorMap[choices.v3.text] = '#F44336';",
+    "",
+    "function playClick(){",
+    "  try{",
+    "    var ctx=new(window.AudioContext||window.webkitAudioContext)();",
+    "    var osc=ctx.createOscillator();var gain=ctx.createGain();",
+    "    osc.connect(gain);gain.connect(ctx.destination);",
+    "    osc.frequency.value=600;",
+    "    gain.gain.setValueAtTime(0.3,ctx.currentTime);",
+    "    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.15);",
+    "    osc.start();osc.stop(ctx.currentTime+0.15);",
+    "  }catch(e){}",
+    "}",
+    "",
+    "function speak(t){",
+    "  speechSynthesis.cancel();",
+    "  var msg=new SpeechSynthesisUtterance(t);",
+    "  msg.lang='en-US';",
+    "  speechSynthesis.speak(msg);",
+    "}",
+    "",
+    "function render(){",
+    "  if(current>=questions.length){showResults();return;}",
+    "  var q=questions[current];",
+    "  var pct=Math.round((current/questions.length)*100);",
+    "  document.getElementById('progressFill').style.width=pct+'%';",
+    "  document.getElementById('questionCounter').textContent='Fråga '+(current+1)+' av '+questions.length;",
+    "  document.getElementById('q').innerText=q.text;",
+    "  var imgEl=document.getElementById('img');",
+    "  imgEl.src=q.img||'';imgEl.style.display=q.img?'inline':'none';",
+    "  selected=null;",
+    "  var c=document.getElementById('choices');c.innerHTML='';",
+    "  function createBtn(label,type,text){",
+    "    var b=document.createElement('div');",
+    "    b.className='choice '+type;b.innerHTML=label;",
+    "    b.onclick=function(){",
+    "      selected=text;",
+    "      document.querySelectorAll('.choice').forEach(function(x){x.classList.remove('active');});",
+    "      b.classList.add('active');",
+    "      playClick();",
+    "      setTimeout(function(){speak(text);},120);",
+    "    };",
+    "    c.appendChild(b);",
+    "  }",
+    "  if(mode==='yesnomaybe'){",
+    "    createBtn(choiceImgs.v1?'<img src=\"'+choiceImgs.v1+'\">':choices.v1.emoji+'<br>'+choices.v1.text,'yes',choices.v1.text);",
+    "    createBtn(choiceImgs.v2?'<img src=\"'+choiceImgs.v2+'\">':choices.v2.emoji+'<br>'+choices.v2.text,'maybe',choices.v2.text);",
+    "    createBtn(choiceImgs.v3?'<img src=\"'+choiceImgs.v3+'\">':choices.v3.emoji+'<br>'+choices.v3.text,'no',choices.v3.text);",
+    "  }",
+    "  if(mode==='yesno'){",
+    "    createBtn(choiceImgs.v1?'<img src=\"'+choiceImgs.v1+'\">':choices.v1.emoji+'<br>'+choices.v1.text,'yes',choices.v1.text);",
+    "    createBtn(choiceImgs.v3?'<img src=\"'+choiceImgs.v3+'\">':choices.v3.emoji+'<br>'+choices.v3.text,'no',choices.v3.text);",
+    "  }",
+    "  if(mode==='scale'){",
+    "    for(var n=1;n<=scaleMax;n++){createBtn(String(n),'scale',String(n));}",
+    "  }",
+    "}",
+    "",
+    "function nextQ(){",
+    "  if(!selected){alert('Välj ett svar först!');return;}",
+    "  answers.push({q:questions[current].text,a:selected});",
+    "  selected=null;current++;render();",
+    "}",
+    "",
+    "function showResults(){",
+    "  document.getElementById('runPanel').style.display='none';",
+    "  document.getElementById('resultPanel').style.display='block';",
+    "  var counts={};",
+    "  answers.forEach(function(x){counts[x.a]=(counts[x.a]||0)+1;});",
+    "  var summary=document.getElementById('resultSummary');summary.innerHTML='';",
+    "  Object.entries(counts).forEach(function(entry){",
+    "    var ans=entry[0];var count=entry[1];",
+    "    var color=colorMap[ans]||'#607D8B';",
+    "    summary.innerHTML+='<div class=\"summary-box\" style=\"background:'+color+'\"><div class=\"summary-count\">'+count+'</div><div class=\"summary-label\">'+ans+'</div></div>';",
+    "  });",
+    "  var list=document.getElementById('resultList');list.innerHTML='';",
+    "  answers.forEach(function(item,i){",
+    "    var color=colorMap[item.a]||'#607D8B';",
+    "    var bc=item.a===choices.v1.text?'badge-yes':item.a===choices.v3.text?'badge-no':item.a===choices.v2.text?'badge-maybe':'badge-num';",
+    "    list.innerHTML+='<li class=\"result-item\"><div class=\"result-badge '+bc+'\">'+item.a.charAt(0)+'</div><div class=\"result-question\"><span style=\"color:#888;font-size:14px;\">Fråga '+(i+1)+'</span><br>'+item.q+'</div><div class=\"result-answer\" style=\"color:'+color+'\">'+item.a+'</div></li>';",
+    "  });",
+    "}",
+    "",
+    "function downloadResults(){",
+    "  var now=new Date();",
+    "  var datum=now.toLocaleDateString('en-US');",
+    "  var tid=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});",
+    "  var counts={};",
+    "  answers.forEach(function(x){counts[x.a]=(counts[x.a]||0)+1;});",
+    "  var content='DIGITAL SAMTALSYTA - RESULTAT\\n================================\\n';",
+    "  content+='Datum: '+datum+'  Tid: '+tid+'\\n';",
+    "  content+='Antal frågor: '+answers.length+'\\n\\n';",
+    "  content+='SAMMANFATTNING\\n--------------\\n';",
+    "  Object.entries(counts).forEach(function(e){content+=e[0]+': '+e[1]+' gang'+(e[1]!==1?'er':'')+'\\n';});",
+    "  content+='\\nDETALJERADE SVAR\\n----------------\\n';",
+    "  answers.forEach(function(item,i){content+='\\nFråga '+(i+1)+': '+item.q+'\\nSvar: '+item.a+'\\n';});",
+    "  var blob=new Blob([content],{type:'text/plain;charset=utf-8'});",
+    "  var a=document.createElement('a');a.href=URL.createObjectURL(blob);",
+    "  a.download='samtalsyta-resultat-'+datum.replace(/\\//g,'-')+'.txt';a.click();",
+    "}",
+    "",
+    "function restartSession(){",
+    "  answers=[];current=0;selected=null;",
+    "  document.getElementById('resultPanel').style.display='none';",
+    "  document.getElementById('runPanel').style.display='block';",
+    "  render();",
+    "}",
+    "",
+    "render();"
+  ].join("\n");
+
+  const sharedHtml = [
+    "<!DOCTYPE html>",
+    "<html lang='en'>",
+    "<head>",
+    "<meta charset='UTF-8'>",
+    "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>",
+    "<title>Samtalsyta</title>",
+    "<style>", css, "</style>",
+    "</head>",
+    "<body>",
+    "<div id='runPanel'>",
+    "  <div class='question-counter' id='questionCounter'></div>",
+    "  <div class='progress-bar-wrap'><div class='progress-bar-fill' id='progressFill' style='width:0%'></div></div>",
+    "  <h2 id='q'></h2>",
+    "  <img id='img' style='max-width:300px;border-radius:12px;'><br>",
+    "  <div id='choices' class='grid'></div>",
+    "  <button class='next' onclick='nextQ()'>Next ➡️</button>",
+    "</div>",
+    "<div id='resultPanel'>",
+    "  <h2>✅ Results</h2>",
+    "  <div class='result-summary' id='resultSummary'></div>",
+    "  <ul class='result-list' id='resultList'></ul>",
+    "  <div style='margin-top:20px;'>",
+    "    <button class='btn-download' onclick='downloadResults()'>⬇️ Ladda ner resultat</button>",
+    "    <button class='btn-restart' onclick='restartSession()'>🔄 Start over</button>",
+    "  </div>",
+    "</div>",
+    "<script>",
+    scriptData,
+    "<" + "/script>",
+    "</body>",
+    "</html>"
+  ].join("\n");
+
+  await upload(`${base}.html`, btoa(unescape(encodeURIComponent(sharedHtml))));
+
+  const url = `https://sukrutaraj.github.io/checklist-pages/${base}.html`;
+  let copied = false;
+  try { await navigator.clipboard.writeText(url); copied = true; } catch(e) {}
+  document.getElementById('link-spinner').classList.remove('on');
+  document.getElementById('qr-copied').textContent = copied ? '✔ Link copied to clipboard' : '⚠️ Copy the link manually';
+  document.getElementById('qr-copied').style.color = copied ? '#4CAF50' : '#e67e22';
+  showQR(url, 'Digital Communication Board');
+}
+
+/* ── INIT ── */
+window.onload = function () {
+  setupChoices();
+  addQuestion();
 };
-input.click();
+
+/* ===== QR KOD ===== */
+function showQR(url, title) {
+  document.getElementById('qr-h').textContent = title || 'QR Code';
+  document.getElementById('qr-u').textContent = url;
+  document.getElementById('qr-modal').classList.add('on');
+  var canvas = document.getElementById('qr-canvas');
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,200,200);
+  function doQR() {
+    var div = document.createElement('div');
+    new QRCode(div, {text:url,width:200,height:200,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
+    setTimeout(function(){
+      var el = div.querySelector('canvas') || div.querySelector('img');
+      if(!el) return;
+      if(el.tagName==='CANVAS'){ ctx.drawImage(el,0,0,200,200); }
+      else { var i=new Image(); i.onload=function(){ctx.drawImage(i,0,0,200,200);}; i.src=el.src; }
+    }, 400);
+  }
+  if(typeof QRCode==='undefined'){
+    var s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+    s.onload=doQR; document.head.appendChild(s);
+  } else { doQR(); }
 }
 
-function editScale(){
-let v = prompt("How many steps?", scaleMax);
-if(v){scaleMax=parseInt(v);setupChoices();}
+function dlQRpdf() {
+  var title = document.getElementById('qr-h').textContent;
+  var url   = document.getElementById('qr-u').textContent;
+  var canvas = document.getElementById('qr-canvas');
+  function build(Lib) {
+    var doc = new Lib({orientation:'portrait',unit:'mm',format:'a4'});
+    var W = doc.internal.pageSize.getWidth();
+    doc.setFontSize(22); doc.setFont('helvetica','bold');
+    doc.text(title, W/2, 30, {align:'center'});
+    var sz=100, x=(W-sz)/2;
+    doc.addImage(canvas.toDataURL('image/png'),'PNG',x,45,sz,sz);
+    doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(100,100,100);
+    doc.text(url, W/2, 158, {align:'center', maxWidth:W-30});
+    doc.save((title.replace(/[^a-zA-Z0-9 ]/g,'_')||'qrcode')+'_QR.pdf');
+  }
+  function load(cb){
+    if(typeof jsPDF!=='undefined'){cb(jsPDF);return;}
+    if(window.jspdf){cb(window.jspdf.jsPDF);return;}
+    var s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.onload=function(){cb(window.jspdf?window.jspdf.jsPDF:jsPDF);};
+    document.head.appendChild(s);
+  }
+  load(build);
 }
-
-function addQuestion(){
-const i=questions.length;
-questions.push({text:"",img:""});
-
-const div=document.createElement("div");
-div.className="section";
-
-div.innerHTML=`
-<input placeholder="Write question"
-style="width:80%;padding:8px"
-oninput="questions[${i}].text=this.value">
-
-<br><br>
-<label>Upload image</label><br>
-<input type="file" onchange="loadImg(event,${i})">
-
-<br>
-<img id="img${i}" style="max-width:200px;display:none">
-`;
-
-document.getElementById("questions").appendChild(div);
-}
-
-function loadImg(e,i){
-const r=new FileReader();
-r.onload=function(){
-questions[i].img=this.result;
-const img=document.getElementById("img"+i);
-img.src=this.result;
-img.style.display="block";
-};
-r.readAsDataURL(e.target.files[0]);
-}
-
-function start(){
-if(questions.length===0){alert("Add at least one question");return;}
-editPanel.style.display="none";
-runPanel.style.display="block";
-render();
-}
-
-function render(){
-
-if(current>=questions.length){showResults();return;}
-
-q.innerText=questions[current].text;
-img.src=questions[current].img||"";
-
-const mode=document.getElementById("mode").value;
-const c=document.getElementById("choices");
-c.innerHTML="";
-
-function createBtn(label,type,text){
-let b=document.createElement("div");
-b.className="choice "+type;
-b.innerHTML=label;
-
-b.onclick=function(){
-selected=text;
-document.querySelectorAll(".choice").forEach(x=>x.classList.remove("active"));
-b.classList.add("active");
-playClick();
-setTimeout(()=>speak(text),120);
-};
-
-c.appendChild(b);
-}
-
-if(mode==="yesnomaybe"){
-createBtn(choiceImgs.v1?'<img src="'+choiceImgs.v1+'">':choices.v1.emoji+"<br>"+choices.v1.text,"yes",choices.v1.text);
-createBtn(choiceImgs.v2?'<img src="'+choiceImgs.v2+'">':choices.v2.emoji+"<br>"+choices.v2.text,"maybe",choices.v2.text);
-createBtn(choiceImgs.v3?'<img src="'+choiceImgs.v3+'">':choices.v3.emoji+"<br>"+choices.v3.text,"no",choices.v3.text);
-}
-
-if(mode==="yesno"){
-createBtn(choiceImgs.v1?'<img src="'+choiceImgs.v1+'">':choices.v1.emoji+"<br>"+choices.v1.text,"yes",choices.v1.text);
-createBtn(choiceImgs.v3?'<img src="'+choiceImgs.v3+'">':choices.v3.emoji+"<br>"+choices.v3.text,"no",choices.v3.text);
-}
-
-if(mode==="scale"){
-for(let i=1;i<=scaleMax;i++){
-createBtn(i,"scale",i);
-}
-}
-
-}
-
-function playClick(){
-const click = new Audio("klick.mpeg-4");
-click.currentTime = 0;
-click.play();
-}
-
-function speak(t){
-speechSynthesis.cancel();
-let msg=new SpeechSynthesisUtterance(t);
-msg.lang="en-US";
-speechSynthesis.speak(msg);
-}
-
-function nextQ(){
-if(!selected)return;
-answers.push({q:questions[current].text,a:selected});
-selected=null;
-current++;
-render();
-}
-
-function showResults(){
-let r=results;
-r.innerHTML=`<h2>Results</h2>
-<button onclick="downloadResults()" class="next">⬇ Download results</button>
-<button onclick="shareResults()" class="next">📩 Share results</button>`;
-
-answers.forEach((x,i)=>{
-r.innerHTML+=`<div class="section">
-<b>Question ${i+1}</b><br>${x.q}<br>Answer: ${x.a}</div>`;
-});
-}
-
-function downloadResults(){
-let content="RESULTS\n\n";
-
-answers.forEach((x,i)=>{
-content+="Question "+(i+1)+"\n"+x.q+"\nAnswer: "+x.a+"\n\n";
-});
-
-let blob=new Blob([content],{type:"text/plain"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="results.txt";
-a.click();
-}
-
-function sharePlaylist(){
-let data = JSON.stringify({
-choices,choiceImgs,scaleMax,questions,mode:mode.value
-});
-
-let blob=new Blob([data],{type:"application/json"});
-let file=new File([blob],"communication_board.json");
-
-if(navigator.share){
-navigator.share({
-title:"Communication Board",
-text:"Here is a communication board",
-files:[file]
-});
-}else{
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="communication_board.json";
-a.click();
-}
-}
-
-function shareResults(){
-let content="RESULTS\n\n";
-
-answers.forEach((x,i)=>{
-content+="Question "+(i+1)+"\n"+x.q+"\nAnswer: "+x.a+"\n\n";
-});
-
-let blob=new Blob([content],{type:"text/plain"});
-let file=new File([blob],"results.txt");
-
-if(navigator.share){
-navigator.share({
-title:"Results",
-text:"Here are the results",
-files:[file]
-});
-}else{
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="results.txt";
-a.click();
-}
-}
-
-function saveTemplate(){
-let name=prompt("Template name:");
-if(!name)return;
-
-localStorage.setItem("board_"+name,JSON.stringify({
-choices,choiceImgs,scaleMax,questions,mode:mode.value
-}));
-
-alert("Saved!");
-}
-
-function loadTemplate(){
-
-let keys=Object.keys(localStorage)
-.filter(k=>k.startsWith("board_"));
-
-let list=document.getElementById("templateList");
-list.style.display="block";
-list.innerHTML="<h3>Select template</h3>";
-
-keys.forEach(key=>{
-
-let name=key.replace("board_","");
-
-let div=document.createElement("div");
-div.className="choicePreview";
-
-let btn=document.createElement("button");
-btn.innerText=name;
-btn.className="smallBtn";
-
-btn.onclick=function(){
-loadTemplateData(key);
-list.style.display="none";
-};
-
-div.appendChild(btn);
-list.appendChild(div);
-
-});
-}
-
-function loadTemplateData(key){
-
-let data=JSON.parse(localStorage.getItem(key));
-
-choices=data.choices;
-choiceImgs=data.choiceImgs||{};
-scaleMax=data.scaleMax;
-questions=data.questions;
-
-document.getElementById("mode").value=data.mode;
-document.getElementById("questions").innerHTML="";
-
-questions.forEach((q,i)=>{
-
-const div=document.createElement("div");
-div.className="section";
-
-div.innerHTML=`
-<input value="${q.text}" style="width:80%;padding:8px"
-oninput="questions[${i}].text=this.value">
-
-<br><br>
-<label>Upload image</label><br>
-<input type="file" onchange="loadImg(event,${i})">
-
-<br>
-<img id="img${i}" src="${q.img||""}" style="max-width:200px;${q.img?'':'display:none'}">
-`;
-
-document.getElementById("questions").appendChild(div);
-
-});
-
-setupChoices();
-}
-
-function exportPlaylist(){
-let blob=new Blob([JSON.stringify({
-choices,choiceImgs,scaleMax,questions,mode:mode.value
-})],{type:"application/json"});
-
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="board.json";
-a.click();
-}
-
-function importPlaylist(){
-
-let input=document.createElement("input");
-input.type="file";
-input.accept="application/json";
-
-input.onchange=e=>{
-let r=new FileReader();
-
-r.onload=()=>{
-try{
-let data=JSON.parse(r.result);
-
-choices=data.choices;
-choiceImgs=data.choiceImgs||{};
-scaleMax=data.scaleMax;
-questions=data.questions;
-
-mode.value=data.mode;
-document.getElementById("questions").innerHTML="";
-
-questions.forEach((q,i)=>{
-
-const div=document.createElement("div");
-div.className="section";
-
-div.innerHTML=`
-<input value="${q.text}" style="width:80%;padding:8px"
-oninput="questions[${i}].text=this.value">
-
-<br><br>
-<label>Upload image</label><br>
-<input type="file" onchange="loadImg(event,${i})">
-
-<br>
-<img id="img${i}" src="${q.img||""}" style="max-width:200px;${q.img?'':'display:none'}">
-`;
-
-document.getElementById("questions").appendChild(div);
-
-});
-
-setupChoices();
-alert("Board loaded!");
-
-}catch{
-alert("Invalid file");
-}
-};
-
-r.readAsText(e.target.files[0]);
-};
-
-input.click();
-}
-
-setupChoices();
-addQuestion();
 
 </script>
 
+
+
+<div id="link-spinner"><div class="sp-ring"></div></div>
+<div id="qr-modal">
+  <div class="qr-box">
+    <div class="qr-heading" id="qr-h"></div>
+    <div class="qr-url" id="qr-u"></div>
+    <canvas id="qr-canvas" width="200" height="200"></canvas><br>
+    <button class="qr-dl" onclick="dlQRpdf()">&#11015;&#65039; Ladda ner PDF</button>
+    <div id="qr-copied" style="font-size:12px;margin-bottom:10px;"></div>
+    <button class="qr-cl" onclick="document.getElementById('qr-modal').classList.remove('on')">Close</button>
+  </div>
+</div>
+</body>
+</html
 </body>
 </html>
